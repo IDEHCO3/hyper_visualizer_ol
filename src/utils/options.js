@@ -37,11 +37,11 @@ export  class supportedAttribute {
   }
   export class Layer {
 
-    constructor(url, json,  options_response, vector_layer) {
-      this.json = json;
-      this.url = url;
-      this.options_response = options_response;
-      this.vector_layer = vector_layer;
+    constructor(obj) {
+      this.json = obj.json;
+      this.url = obj.url;
+      this.options_response = obj.options_response;
+      this.vector_layer = obj.vector_layer;
       this.optionsLayer = [];
     }
 
@@ -52,6 +52,4 @@ export  class supportedAttribute {
         return arr_url[size_arr-2].toUpperCase();
       return arr_url[size_arr-1].toUpperCase();
     }
-
-  
-  }
+}

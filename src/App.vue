@@ -1,19 +1,15 @@
 <template>
   <div id="app">
-    <v-app>
-      <base-view></base-view>
-    </v-app>
+    <hv-baseview/>
   </div>
 </template>
 
 <script>
-import BaseView from './components/BaseView'
+import HvBaseview from './components/hv-baseview'
 
 export default {
   name: 'app',
-  components: {
-    'base-view': BaseView
-  }
+  components: { HvBaseview }
 }
 </script>
 
