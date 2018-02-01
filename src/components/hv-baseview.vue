@@ -37,15 +37,21 @@ export default {
   },
   methods: {
     addLayer () {
-    	const url = this.urlSearch.endsWith('/') ? this.urlSearch : `${this.urlSearch}/`
-    	loadLayer(url).then(res => {
-        const layer = res
-        layer.vector_layer = vectorSource(res.json)
-        this.layers.push(layer)
-        this.map.addLayer(layer.vector_layer)
-      })
-      this.urlSearch = ''
+      if (!this.alreadyIncluded()) {
+        loadLayer(this.urlSearch).then(res => {
+          const layer = res
+          layer.vector_layer = vectorSource(res.json)
+          this.layers.push(layer)
+          this.map.addLayer(layer.vector_layer)
+        })
+        this.urlSearch = ''
+      }
     },
+    
+    alreadyIncluded () {
+      this.urlSearch.endsWith('/') ? this.urlSearch : `${this.urlSearch}/`
+      return this.layers.some(layer => layer.url === this.urlSearch)
+    }
   },
   mounted () {
   	this.map = new ol.Map({
