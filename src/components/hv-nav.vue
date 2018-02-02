@@ -2,15 +2,51 @@
 <div>
   <v-navigation-drawer persistent clipped enable-resize-watcher v-model="drawer" app>
 
-  <v-expansion-panel expand>
-    <v-expansion-panel-content v-for="layer in layers" :key="layer.json.id">
+  <v-expansion-panel expand dense >
+    <v-expansion-panel-content v-for="layer in layers" :key="layer.json.id" class="mb-2">
       <div slot="header">{{ layer.json.properties.sigla }}</div>
       <v-card>
         <v-card-actions>
             <v-switch :label="switchLabel(layer.vectorLayer.getVisible)" @change="changeLayerVisibility(layer.vectorLayer)"
-            v-model="layer.vectorLayer.getVisible" color="primary"/></v-switch>
+            v-model="layer.vectorLayer.getVisible" color="cyan"/></v-switch>
           <v-spacer></v-spacer>
         </v-card-actions>
+
+        <transition name="fade">
+          <v-expansion-panel popout v-show="layer.vectorLayer.getVisible">
+            <v-expansion-panel-content class="cyan darken-2">
+              <div slot="header">Opções da camada {{ layer.json.properties.sigla }}</div>
+              <v-list dense>
+                <v-list-tile v-for="(option, index) in layer.optionsResponse.supportedOperations" :key="index">
+                  <v-list-tile-title> {{ option['hydra:operation'] }} </v-list-tile-title>
+
+                  <v-btn icon flat
+                  @click.native="removeOperation(layer, option['hydra:operation'])" 
+                  v-if="layer.optionsLayer.some(layer => layer.operation === option['hydra:operation'])"
+                  >
+                    <v-icon color="red darken-3">delete</v-icon>
+                  </v-btn>
+
+                  <v-menu offset-x :close-on-content-click="false">
+                    <v-btn icon slot="activator">
+                      <v-icon color="indigo accent-4">layers</v-icon>
+                    </v-btn>
+                    <v-card dark >
+                      <v-card-actions>
+                        <input dark type="text" v-model="optionValue" @keyup.enter="addOperation(layer, option['hydra:operation'])"></input>
+                        <v-btn icon color="primary" flat @click.native="addOperation(option['hydra:operation'])">
+                          <v-icon>input</v-icon>
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-menu>
+
+                </v-list-tile>
+              </v-list>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </transition>
+
       </v-card>
     </v-expansion-panel-content>
   </v-expansion-panel>
@@ -37,13 +73,18 @@ export default {
     return {
     	drawer: false,
     	urlSearch: '',
-      items: [
-        { title: 'Home', icon: 'dashboard' },
-        { title: 'About', icon: 'question_answer' }
-      ]
+      optionValue: ''
     }
   },
   methods: {
+    addOperation (layer, operation) {
+      const url = `${layer.url}${operation}/${this.optionValue}/`
+      this.$emit('addOperation', layer, url, operation)
+      this.optionValue = ''
+    },
+    removeOperation (layer, operation) {
+      console.log(layer, operation)
+    },
     changeLayerVisibility (vectorLayer) {
       const visibility = vectorLayer.getVisible
       vectorLayer.setVisible(visibility)
@@ -87,5 +128,11 @@ input[type=text]:focus {
     border-bottom: 1px solid blue;
     color: white;
 
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .8s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>

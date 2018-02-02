@@ -1,6 +1,6 @@
 <template>
   <v-app dark id="inspire">
-  <hv-nav @urlEntered="addLayer" :layers="layers"></hv-nav>
+  <hv-nav @urlEntered="addLayer" @addOperation="addOperationLayer" :layers="layers"></hv-nav>
     <div id="map"></div>
   </v-app>
 </template>
@@ -33,7 +33,19 @@ export default {
         })
       }
     },
-    
+    addOperationLayer (layer, url, operation) {
+      const layerIndex = this.layers.indexOf(layer)
+      axios.get(url).then(res => {
+        const vectorSource = new ol.source.Vector({
+          features: new ol.format.GeoJSON().readFeatures(res.data, {featureProjection: this.map.getView().getProjection()})
+        })
+        const vectorLayer = new ol.layer.Vector({
+          source: vectorSource
+        })
+        this.layers[layerIndex].optionsLayer.push({vectorLayer, operation})
+        this.map.addLayer(vectorLayer)
+      })
+    },
     alreadyIncluded (url) {
       return this.layers.some(layer => layer.url === url)
     }
