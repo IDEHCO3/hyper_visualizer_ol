@@ -7,7 +7,7 @@ export const loadLayer = (url) =>
 		  const vector = new Layer({
 		  	json: getRes.data,
 		  	url: url,
-		  	options_response: new OptionsLayer(
+		  	optionsResponse: new OptionsLayer(
 	        optionRes.data['hydra:supportedProperties'],
 	        optionRes.data['hydra:supportedOperations'],
 	        optionRes.data['@context'],

@@ -40,8 +40,8 @@ export  class supportedAttribute {
     constructor(obj) {
       this.json = obj.json;
       this.url = obj.url;
-      this.options_response = obj.options_response;
-      this.vector_layer = obj.vector_layer;
+      this.optionsResponse = obj.options_response;
+      this.vectorLayer = obj.vector_layer;
       this.optionsLayer = [];
     }
 
