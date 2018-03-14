@@ -3,43 +3,57 @@
   <v-navigation-drawer persistent clipped enable-resize-watcher v-model="drawer" app>
 
   <v-expansion-panel expand dense >
-    <v-expansion-panel-content v-for="layer in layers" :key="layer.json.id" class="mb-2">
-      <div slot="header">{{ layer.json.properties.sigla }}</div>
+    <v-expansion-panel-content v-for="(layer, layerIndex) in layers" :key="layerIndex" class="mb-2">
+      <div slot="header">{{ layer.operationName || layer.short_name() }}</div>
+
       <v-card>
         <v-card-actions>
-            <v-switch :label="switchLabel(layer.vectorLayer.getVisible)" @change="changeLayerVisibility(layer.vectorLayer)"
-            v-model="layer.vectorLayer.getVisible" color="cyan"/></v-switch>
-          <v-spacer></v-spacer>
+          <v-switch :label="layer.enabled ? 'ATIVO' : 'INATIVO'" v-model="layer.enabled" @change="changeLayerVisibility(layer)" color="cyan"/></v-switch>
+          <v-list-tile style="margin-top: -30px">
+            <v-btn icon @click="removeLayer(layer, layerIndex)">
+              <v-icon color="red accent-3">delete</v-icon>
+            </v-btn>
+          </v-list-tile>
+          <v-btn icon @click.native="zoomToLayer(layer)" style="margin-top: -30px">
+            <v-icon dark>zoom_in</v-icon>
+          </v-btn>
+          <v-menu offset-x :close-on-content-click="true" style="margin-top: -30px">
+            <v-btn icon slot="activator" >
+              <v-icon color="indigo accent-4">invert_colors</v-icon>
+            </v-btn>
+            <v-card dark >
+              <v-card-actions>
+                <hv-nav-palette :layer="layer" @selectedColor="changeLayerColor"></hv-nav-palette>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
         </v-card-actions>
 
         <transition name="fade">
-          <v-expansion-panel popout v-show="layer.vectorLayer.getVisible">
+          <v-expansion-panel popout v-show="layer.enabled">
             <v-expansion-panel-content class="cyan darken-2">
-              <div slot="header">Opções da camada {{ layer.json.properties.sigla }}</div>
+              <div slot="header">Opções da camada</div>
               <v-list dense>
-                <v-list-tile v-for="(option, index) in layer.optionsResponse.supportedOperations" :key="index">
+                <v-list-tile v-for="(option, index) in layer.options_response.supportedOperations" :key="index">
                   <v-list-tile-title> {{ option['hydra:operation'] }} </v-list-tile-title>
 
-                  <v-btn icon flat
-                  @click.native="removeOperation(layer, option['hydra:operation'])" 
-                  v-if="layer.optionsLayer.some(layer => layer.operation === option['hydra:operation'])"
-                  >
-                    <v-icon color="red darken-3">delete</v-icon>
-                  </v-btn>
-
-                  <v-menu offset-x :close-on-content-click="false">
+                  <v-menu offset-x :close-on-content-click="false" v-if="option['hydra:expects'].length > 0">
                     <v-btn icon slot="activator">
                       <v-icon color="indigo accent-4">layers</v-icon>
                     </v-btn>
-                    <v-card dark >
+                    <v-card dark>
                       <v-card-actions>
-                        <input dark type="text" v-model="optionValue" @keyup.enter="addOperation(layer, option['hydra:operation'])"></input>
-                        <v-btn icon color="primary" flat @click.native="addOperation(option['hydra:operation'])">
+                        <input dark type="text" v-model="optionValue" @keyup.enter="addOperation(layer, option)"></input>
+                        <v-btn icon color="primary" flat @click.native="addOperation(layer, option)">
                           <v-icon>input</v-icon>
                         </v-btn>
                       </v-card-actions>
                     </v-card>
                   </v-menu>
+
+                  <v-btn icon v-else style="left: -3px" @click.stop="addOperation(layer, option)">
+                    <v-icon color="cyan lighten-4">info</v-icon>
+                  </v-btn>
 
                 </v-list-tile>
               </v-list>
@@ -66,36 +80,55 @@
 </template>
 
 <script>
+import { loadLayer } from '../utils/layerUtils.js'
+import HvNavPalette from './hv-nav-palette'
+
 export default {
   name: 'hv-nav',
   props: [ 'layers' ],
+  components: { HvNavPalette },
   data () {
     return {
-    	drawer: false,
-    	urlSearch: '',
+      drawer: false,
+      urlSearch: '',
       optionValue: ''
     }
   },
   methods: {
     addOperation (layer, operation) {
-      const url = `${layer.url}${operation}/${this.optionValue}/`
-      this.$emit('addOperation', layer, url, operation)
+      const url = this.optionValue.length > 0 ? `${layer.url}${operation['hydra:operation']}/${this.optionValue}/` : `${layer.url}${operation['hydra:operation']}/`
+      const operationName = `${layer.shortName()} / ${operation['hydra:operation']} / ${this.optionValue}`
+      const returnInfo = operation["hydra:returns"].startsWith('http://schema.org/') // CASO A OPERAÇÃO RETORNE UM VALOR PRIMITIVO - TRUE
+      !returnInfo ? this.$emit('addOperation', url, operationName) : this.$store.dispatch('findModalInfo', url)
       this.optionValue = ''
     },
-    removeOperation (layer, operation) {
-      console.log(layer, operation)
+    changeLayerColor (layer, color) {
+      layer.leaflet_layer.setStyle({
+        weight: 5,
+        color: color,
+        dashArray: '',
+        fillOpacity: 0.5
+      })
+      layer.style = { "color": color, "weight": 5, "opacity": 0.5 }
     },
-    changeLayerVisibility (vectorLayer) {
-      const visibility = vectorLayer.getVisible
-      vectorLayer.setVisible(visibility)
+    changeLayerVisibility (layer) {
+      layer.enabled ? this.$emit('layerVisibility', layer, true) : this.$emit('layerVisibility', layer, false)
+    },
+    removeLayer (layer, index) {
+      layer.leaflet_layer.remove()
+      this.$emit('removeLayer', index)
+    },
+    switchLabel (value) {
+      return value ? 'Ativo' : 'Inativo'
     },
     urlEntered () {
       this.urlSearch = this.urlSearch.endsWith('/') ? this.urlSearch : `${this.urlSearch}/`
       this.$emit('urlEntered', this.urlSearch)
       this.urlSearch = ''
     },
-    switchLabel (value) {
-      return value ? 'Ativo' : 'Inativo'
+    zoomToLayer (layerResource) {
+      this.$emit('zoom', layerResource)
+    
     }
   }
 }
@@ -122,17 +155,17 @@ export default {
     border-bottom: 1px solid white;
     outline: none;
     color: white;
-}
+  }
 
-input[type=text]:focus {
-    border-bottom: 1px solid blue;
-    color: white;
+  input[type=text]:focus {
+      border-bottom: 1px solid blue;
+      color: white;
 
-}
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .8s;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
+  }
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity .8s;
+  }
+  .fade-enter, .fade-leave-to {
+    opacity: 0;
+  }
 </style>

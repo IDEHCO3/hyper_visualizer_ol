@@ -29,20 +29,30 @@ export  class supportedAttribute {
   }
   export class OptionsLayer {
     constructor(supportedProperties, supportedOperations, context,  iriTemplate) {
-      this.supportedProperties = supportedProperties;
-      this.supportedOperations = supportedOperations.sort((a,b) => a['hydra:operation'] < b['hydra:operation'] ? -1 : 1);
+      this.supporte_properties = supportedProperties;
+      this.supported_operations = supportedOperations.sort((a,b) => a['hydra:operation'] < b['hydra:operation'] ? -1 : 1);
       this.context = context;
-      this.iriTemplate = iriTemplate;
+      this.iri_template = iriTemplate;
     }
   }
-  export class Layer {
+  export class LayerResource {
 
     constructor(obj) {
-      this.json = obj.json;
-      this.url = obj.url;
-      this.optionsResponse = obj.optionsResponse;
-      this.vectorLayer = obj.vectorLayer;
-      this.optionsLayer = [];
+      if (obj != null) {
+        this.json = obj.json;
+        this.url = obj.url;
+        this.options_response = obj.options_response;
+        this.vectorLayer = obj.vectorLayer;
+        this.options_layer = [];
+      }
+
+      else {
+        this.json = null;
+        this.url = null;
+        this.options_response = null;
+        this.vectorLayer = null;
+        this.options_layer = [];
+      }
     }
 
      short_name() {

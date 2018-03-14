@@ -1,20 +1,18 @@
 import axios from 'axios'
-import { Layer, OptionsLayer } from './options'
+import { LayerResource, OptionsLayer } from './options'
 
-export const loadLayer = (url) => 
-	axios.all([axios.get(url), axios.options(url)])
-		.then(axios.spread((getRes, optionRes) => {
-		  const vector = new Layer({
-		  	json: getRes.data,
-		  	url: url,
-		  	optionsResponse: new OptionsLayer(
-	        optionRes.data['hydra:supportedProperties'],
-	        optionRes.data['hydra:supportedOperations'],
-	        optionRes.data['@context'],
-	        optionRes.data['hydra:iriTemplate']
-	      ),
-	  		optionsLayer: []
-		  })
-		  return vector
-		 })
-		)
+export async function loadLayer(url) {
+	let layer = new LayerResource();
+  try {
+    const resp_get = await axios.get(url);
+		layer.json = resp_get.data;
+		layer.url = url;
+		layer.options_layer = [];
+		const resp_options = await axios.options(url);
+		layer.options_response =  new OptionsLayer( resp_options.data['hydra:supportedProperties'], resp_options.data['hydra:supportedOperations'], resp_options.data['@context'], resp_options.data['hydra:iriTemplate']);
+		return layer;
+  } catch (error) {
+    console.error(error);
+		return layer;
+  }
+}
