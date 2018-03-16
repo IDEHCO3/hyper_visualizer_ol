@@ -1,65 +1,40 @@
+export class OptionsLayer {
 
-export  class supportedAttribute {
-    constructor(property, required, writeable, readable, isExternal, isUnique, isIdentifier) {
-      this.property = property;
-      this.required = required;
-      this.writeable = writeable;
-      this.readable = readable;
-      this.isExternal = isExternal;
-      this.isUnique = isUnique;
-      this.isIdentifier = isIdentifier;
-    }
+  constructor(supportedProperties, supportedOperations, context,  iriTemplate) {
+    this.supporte_properties = supportedProperties;
+    this.supported_operations = supportedOperations.sort((a,b) => a['hydra:operation'] < b['hydra:operation'] ? -1 : 1);
+    this.context = context;
+    this.iri_template = iriTemplate;
   }
-  export class supportedOperation {
-    constructor(property, required, writeable, readable, isExternal, isUnique, isIdentifier) {
-      this.property = property;
-      this.required = required;
-      this.writeable = writeable;
-      this.readable = readable;
-      this.isExternal = isExternal;
-      this.isUnique = isUnique;
-      this.isIdentifier = isIdentifier;
-    }
-  }
-  export class Context {
 
-  }
-  export class iriTemplate {
+}
 
-  }
-  export class OptionsLayer {
-    constructor(supportedProperties, supportedOperations, context,  iriTemplate) {
-      this.supporte_properties = supportedProperties;
-      this.supported_operations = supportedOperations.sort((a,b) => a['hydra:operation'] < b['hydra:operation'] ? -1 : 1);
-      this.context = context;
-      this.iri_template = iriTemplate;
-    }
-  }
-  export class LayerResource {
+export class LayerResource {
 
-    constructor(obj) {
-      if (obj != null) {
-        this.json = obj.json;
-        this.url = obj.url;
-        this.options_response = obj.options_response;
-        this.vectorLayer = obj.vectorLayer;
-        this.options_layer = [];
-      }
-
-      else {
-        this.json = null;
-        this.url = null;
-        this.options_response = null;
-        this.vectorLayer = null;
-        this.options_layer = [];
-      }
+  constructor(obj) {
+    if (obj != null) {
+      this.json = obj.json;
+      this.url = obj.url;
+      this.options_response = obj.options_response;
+      this.vectorLayer = obj.vectorLayer;
+      this.options_layer = [];
     }
 
-     short_name() {
-      let arr_url = this.url.split('/');
-      let size_arr = arr_url.length;
-      if (arr_url[size_arr-1] == "")
-        return arr_url[size_arr-2].toUpperCase();
-      return arr_url[size_arr-1].toUpperCase();
+    else {
+      this.json = null;
+      this.url = null;
+      this.options_response = null;
+      this.vectorLayer = null;
+      this.options_layer = [];
     }
+  }
+
+   short_name() {
+    let arr_url = this.url.split('/');
+    let size_arr = arr_url.length;
+    if (arr_url[size_arr-1] == "")
+      return arr_url[size_arr-2].toUpperCase();
+    return arr_url[size_arr-1].toUpperCase();
+  }
+  
 }

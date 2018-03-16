@@ -16,3 +16,12 @@ export async function loadLayer(url) {
 		return layer;
   }
 }
+
+export function onEachFeature (feature) {
+  let result = ''
+  for (const [property_name, property_value] of Object.entries(feature)) {
+  	if (property_name !== 'geometry')
+    result += "<p>" + property_name + ": " + property_value + "</p>"
+  }
+  return result
+}
