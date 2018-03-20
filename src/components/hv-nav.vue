@@ -97,9 +97,11 @@ export default {
   methods: {
     addOperation (layer, operation) {
       const url = this.optionValue.length > 0 ? `${layer.url}${operation['hydra:operation']}/${this.optionValue}/` : `${layer.url}${operation['hydra:operation']}/`
-      const operationName = `${layer.shortName()} / ${operation['hydra:operation']} / ${this.optionValue}`
+      const operationName = `${layer.short_name()} / ${operation['hydra:operation']} / ${this.optionValue}`
       const returnInfo = operation["hydra:returns"].startsWith('http://schema.org/') // CASO A OPERAÇÃO RETORNE UM VALOR PRIMITIVO - TRUE
-      !returnInfo ? this.$emit('addOperation', url, operationName) : this.$store.dispatch('findModalInfo', url)
+      if (!returnInfo) {
+        this.$emit('addOperation', url, operationName)
+      }
       this.optionValue = ''
     },
     changeLayerVisibility (layer) {
@@ -118,7 +120,6 @@ export default {
     },
     zoomToLayer (layerResource) {
       this.$emit('zoom', layerResource)
-    
     }
   }
 }

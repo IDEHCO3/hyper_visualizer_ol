@@ -1,6 +1,6 @@
 <template>
   <v-app dark id="inspire">
-    <hv-nav @urlEntered="addLayer" @addOperation="addOperationLayer" :layers="layers" @removeLayer="removeLayer" @zoom="zoomToLayer"></hv-nav>
+    <hv-nav @urlEntered="addLayer" @addOperation="addLayer" :layers="layers" @removeLayer="removeLayer" @zoom="zoomToLayer"></hv-nav>
     <div id="popup" ref="popup"></div>
     <div id="map"></div>
   </v-app>
@@ -24,26 +24,17 @@ export default {
     }
   },
   methods: {
-    addLayer (url) {
+    addLayer (url, operation_name) {
       loadLayer(url).then(layer_resource => {
         let gjson_format = new ol.format.GeoJSON().readFeatures(layer_resource.json, {featureProjection: this.map.getView().getProjection()}) ;
         let vector_source = new ol.source.Vector({features: gjson_format});
         let vector_layer = new ol.layer.Vector({ source: vector_source });
+        if (operation_name) {
+          layer_resource.operationName = operation_name
+        }
         this.map.addLayer(vector_layer);
         layer_resource.vector_layer = vector_layer
-        this.layers.push(layer_resource);
-      })
-    },
-    addOperationLayer (layer, url, operation) {
-      const layerIndex = this.layers.indexOf(layer);
-      console.log("entrei em addoperationLayer");
-      axios.get(url).then(res => {
-        const vector_source = new ol.source.Vector({ features: new ol.format.GeoJSON().readFeatures(res.data, {featureProjection: this.map.getView().getProjection()})
-        })
-        const vector_layer = new ol.layer.Vector({ source: vector_source })
-        layer.vector_layer = vector_layer;
-        this.layers[layerIndex].options_layer.push({vector_layer, operation})
-        this.map.addLayer(vector_layer)
+        this.layers.unshift(layer_resource);
       })
     },
     alreadyIncluded (url) {
