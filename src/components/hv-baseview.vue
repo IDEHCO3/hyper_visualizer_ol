@@ -26,13 +26,13 @@ export default {
   methods: {
     addLayer (url) {
       //if (!this.alreadyIncluded(url)) {
-        loadLayer(url).then(layerResource => {
-          let gjson_format = new ol.format.GeoJSON().readFeatures(layerResource.json, {featureProjection: this.map.getView().getProjection()}) ;
-          let vectorSource = new ol.source.Vector({features: gjson_format});
-          let vectorLayer = new ol.layer.Vector({ source: vectorSource });
-          this.map.addLayer(vectorLayer);
-          layerResource.vector_layer = vectorLayer
-          this.layers.push(layerResource);
+        loadLayer(url).then(layer_resource => {
+          let gjson_format = new ol.format.GeoJSON().readFeatures(layer_resource.json, {featureProjection: this.map.getView().getProjection()}) ;
+          let vector_source = new ol.source.Vector({features: gjson_format});
+          let vector_layer = new ol.layer.Vector({ source: vector_source });
+          this.map.addLayer(vector_layer);
+          layer_resource.vector_layer = vector_layer
+          this.layers.push(layer_resource);
         })
       //}
     },
@@ -40,12 +40,12 @@ export default {
       const layerIndex = this.layers.indexOf(layer);
       console.log("entrei em addoperationLayer");
       axios.get(url).then(res => {
-        const vectorSource = new ol.source.Vector({ features: new ol.format.GeoJSON().readFeatures(res.data, {featureProjection: this.map.getView().getProjection()})
+        const vector_source = new ol.source.Vector({ features: new ol.format.GeoJSON().readFeatures(res.data, {featureProjection: this.map.getView().getProjection()})
         })
-        const vectorLayer = new ol.layer.Vector({ source: vectorSource })
-        layer.vectorLayer = vectorLayer;
-        this.layers[layerIndex].optionsLayer.push({vectorLayer, operation})
-        this.map.addLayer(vectorLayer)
+        const vector_layer = new ol.layer.Vector({ source: vector_source })
+        layer.vector_layer = vector_layer;
+        this.layers[layerIndex].optionsLayer.push({vector_layer, operation})
+        this.map.addLayer(vector_layer)
       })
     },
     alreadyIncluded (url) {
@@ -67,8 +67,8 @@ export default {
         popupElement.innerHTML = onEachFeature(layer_properties)
       })
     },
-    zoomToLayer (layerResource) {
-      let extent = layerResource.vector_layer.getSource().getExtent();
+    zoomToLayer (layer_resource) {
+      let extent = layer_resource.vector_layer.getSource().getExtent();
       this.map.getView().fit(extent, this.map.getSize());
     }
   },

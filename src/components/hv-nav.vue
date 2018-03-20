@@ -8,7 +8,7 @@
 
       <v-card>
         <v-card-actions>
-          <v-switch :label="layer.enabled ? 'ATIVO' : 'INATIVO'" v-model="layer.enabled" @change="changeLayerVisibility(layer)" color="cyan"/></v-switch>
+          <v-switch :label="layer.vector_layer.getVisible() ? 'ATIVO' : 'INATIVO'" v-model="layer.vector_layer.getVisible()" @change="changeLayerVisibility(layer)" color="cyan"/></v-switch>
           <v-list-tile style="margin-top: -30px">
             <v-btn icon @click="removeLayer(layer, layerIndex)">
               <v-icon color="red accent-3">delete</v-icon>
@@ -30,7 +30,7 @@
         </v-card-actions>
 
         <transition name="fade">
-          <v-expansion-panel popout v-show="layer.enabled">
+          <v-expansion-panel popout v-show="layer.vector_layer.getVisible()">
             <v-expansion-panel-content class="cyan darken-2">
               <div slot="header">Opções da camada</div>
               <v-list dense>
@@ -112,7 +112,7 @@ export default {
       layer.style = { "color": color, "weight": 5, "opacity": 0.5 }
     },
     changeLayerVisibility (layer) {
-      layer.enabled ? this.$emit('layerVisibility', layer, true) : this.$emit('layerVisibility', layer, false)
+      (layer.vector_layer.getVisible()) ? layer.vector_layer.setVisible(false) : layer.vector_layer.setVisible(true)
     },
     removeLayer (layer, index) {
       layer.leaflet_layer.remove()

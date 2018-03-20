@@ -16,7 +16,7 @@ export class LayerResource {
       this.json = obj.json;
       this.url = obj.url;
       this.options_response = obj.options_response;
-      this.vectorLayer = obj.vectorLayer;
+      this.vector_layer = obj.vector_layer;
       this.options_layer = [];
     }
 
@@ -24,7 +24,7 @@ export class LayerResource {
       this.json = null;
       this.url = null;
       this.options_response = null;
-      this.vectorLayer = null;
+      this.vector_layer = null;
       this.options_layer = [];
     }
   }
