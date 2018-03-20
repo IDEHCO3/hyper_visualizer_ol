@@ -11,6 +11,8 @@
 </template>
 
 <script>
+import { style as ol_style} from 'openlayers'
+
 export default {
   name: 'palette-color',
   props: ['layer'],
@@ -28,9 +30,12 @@ export default {
     }
   },
   methods: {
-    handlerClick(color) {
+    handlerClick (color) {
       this.selectedColor = color
-      this.$emit('selectedColor', this.layer, color)
+      const fill = new ol_style.Fill({ color }) // fundo
+      const stroke = new ol_style.Stroke({ color: '#DAE6F0', width: 1.25 }) // contorno
+      const new_style = new ol_style.Style({ fill, stroke })
+      this.layer.vector_layer.setStyle(new_style)
     }
   }
 }

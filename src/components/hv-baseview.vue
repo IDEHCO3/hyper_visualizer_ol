@@ -1,6 +1,6 @@
 <template>
   <v-app dark id="inspire">
-    <hv-nav @urlEntered="addLayer" @addOperation="addOperationLayer" :layers="layers" @zoom="zoomToLayer"></hv-nav>
+    <hv-nav @urlEntered="addLayer" @addOperation="addOperationLayer" :layers="layers" @removeLayer="removeLayer" @zoom="zoomToLayer"></hv-nav>
     <div id="popup" ref="popup"></div>
     <div id="map"></div>
   </v-app>
@@ -42,7 +42,7 @@ export default {
         })
         const vector_layer = new ol.layer.Vector({ source: vector_source })
         layer.vector_layer = vector_layer;
-        this.layers[layerIndex].optionsLayer.push({vector_layer, operation})
+        this.layers[layerIndex].options_layer.push({vector_layer, operation})
         this.map.addLayer(vector_layer)
       })
     },
@@ -65,6 +65,10 @@ export default {
         popupElement.innerHTML = onEachFeature(layer_properties)
         popupElement.firstElementChild.addEventListener('click', () => popup.setPosition(undefined))
       })
+    },
+    removeLayer (layer, index) {
+      this.map.removeLayer(layer.vector_layer)
+      this.layers.splice(index, 1)
     },
     zoomToLayer (layer_resource) {
       let extent = layer_resource.vector_layer.getSource().getExtent();

@@ -23,7 +23,7 @@
             </v-btn>
             <v-card dark >
               <v-card-actions>
-                <hv-nav-palette :layer="layer" @selectedColor="changeLayerColor"></hv-nav-palette>
+                <hv-nav-palette :layer="layer"></hv-nav-palette>
               </v-card-actions>
             </v-card>
           </v-menu>
@@ -34,7 +34,7 @@
             <v-expansion-panel-content class="cyan darken-2">
               <div slot="header">Opções da camada</div>
               <v-list dense>
-                <v-list-tile v-for="(option, index) in layer.options_response.supportedOperations" :key="index">
+                <v-list-tile v-for="(option, index) in layer.options_response.supported_operations" :key="index">
                   <v-list-tile-title> {{ option['hydra:operation'] }} </v-list-tile-title>
 
                   <v-menu offset-x :close-on-content-click="false" v-if="option['hydra:expects'].length > 0">
@@ -102,21 +102,11 @@ export default {
       !returnInfo ? this.$emit('addOperation', url, operationName) : this.$store.dispatch('findModalInfo', url)
       this.optionValue = ''
     },
-    changeLayerColor (layer, color) {
-      layer.leaflet_layer.setStyle({
-        weight: 5,
-        color: color,
-        dashArray: '',
-        fillOpacity: 0.5
-      })
-      layer.style = { "color": color, "weight": 5, "opacity": 0.5 }
-    },
     changeLayerVisibility (layer) {
       (layer.vector_layer.getVisible()) ? layer.vector_layer.setVisible(false) : layer.vector_layer.setVisible(true)
     },
     removeLayer (layer, index) {
-      layer.leaflet_layer.remove()
-      this.$emit('removeLayer', index)
+      this.$emit('removeLayer', layer, index)
     },
     switchLabel (value) {
       return value ? 'Ativo' : 'Inativo'
