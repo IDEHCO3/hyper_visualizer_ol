@@ -18,7 +18,7 @@ export async function loadLayer(url) {
 }
 
 export function onEachFeature (feature) {
-  let result = ''
+  let result = '<div id="popup-close">X</div>'
   for (const [property_name, property_value] of Object.entries(feature)) {
   	if (property_name !== 'geometry')
     result += "<p>" + property_name + ": " + property_value + "</p>"

@@ -25,16 +25,14 @@ export default {
   },
   methods: {
     addLayer (url) {
-      //if (!this.alreadyIncluded(url)) {
-        loadLayer(url).then(layer_resource => {
-          let gjson_format = new ol.format.GeoJSON().readFeatures(layer_resource.json, {featureProjection: this.map.getView().getProjection()}) ;
-          let vector_source = new ol.source.Vector({features: gjson_format});
-          let vector_layer = new ol.layer.Vector({ source: vector_source });
-          this.map.addLayer(vector_layer);
-          layer_resource.vector_layer = vector_layer
-          this.layers.push(layer_resource);
-        })
-      //}
+      loadLayer(url).then(layer_resource => {
+        let gjson_format = new ol.format.GeoJSON().readFeatures(layer_resource.json, {featureProjection: this.map.getView().getProjection()}) ;
+        let vector_source = new ol.source.Vector({features: gjson_format});
+        let vector_layer = new ol.layer.Vector({ source: vector_source });
+        this.map.addLayer(vector_layer);
+        layer_resource.vector_layer = vector_layer
+        this.layers.push(layer_resource);
+      })
     },
     addOperationLayer (layer, url, operation) {
       const layerIndex = this.layers.indexOf(layer);
@@ -57,14 +55,15 @@ export default {
       const popupElement = this.$refs.popup
       const select =  new ol.interaction.Select()
 
-      map.removeInteraction(select)
       map.addInteraction(select)
 
       select.on('select', function(e) {
+        map.removeInteraction(select)
         const layer_properties = e.selected[0].getProperties()
         popup.setPosition(evt.coordinate)
         map.addOverlay(popup)
         popupElement.innerHTML = onEachFeature(layer_properties)
+        popupElement.firstElementChild.addEventListener('click', () => popup.setPosition(undefined))
       })
     },
     zoomToLayer (layer_resource) {
@@ -84,7 +83,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
   #map {
     height: 100%;
     width: 100%;
@@ -99,10 +98,21 @@ export default {
     -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
     filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
     padding: 5px;
+    padding-top: 15px;
     border-radius: 10px;
     border: 1px solid #cccccc;
     bottom: 12px;
     left: -50px;
     min-width: 280px;
+  }
+  #popup-close {
+    position: absolute;
+    color: #F44;
+    content: 'X';
+    height: 20px;
+    width: 20px;
+    top: 5px;
+    right: 10px;
+    cursor: pointer;
   }
 </style>
