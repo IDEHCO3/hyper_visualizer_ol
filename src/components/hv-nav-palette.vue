@@ -4,7 +4,7 @@
       <li class="color-box" v-for="color in palette" :key="color.hex"
         @click="handlerClick(color)"
         :style="{background: color.hex}">
-        <div class="color-selected" v-show="color === selectedColor"></div>
+        <div class="color-selected" v-show="color.hex === selectedColor"></div>
       </li>
     </ul>
   </div>

@@ -71,6 +71,10 @@
         <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
       </v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-btn class="choice-btn" color="cyan lighten-1" @click.native="choiceRenderMode(renderMode)">
+        {{ renderMode.render }}
+        <v-icon>{{ renderMode.icon }}</v-icon>
+      </v-btn>
       <input type="text" v-model="urlSearch" placeholder="Enter URL here..." @keyup.enter="urlEntered"> </input>
       <v-btn icon @click.native="urlEntered">
         <v-icon>search</v-icon>
@@ -90,6 +94,7 @@ export default {
   data () {
     return {
       drawer: false,
+      renderMode: {icon: 'image', render: 'image'},
       urlSearch: '',
       optionValue: ''
     }
@@ -100,12 +105,15 @@ export default {
       const operationName = `${layer.short_name()} / ${operation['hydra:operation']} / ${this.optionValue}`
       const returnInfo = operation["hydra:returns"].startsWith('http://schema.org/') // CASO A OPERAÇÃO RETORNE UM VALOR PRIMITIVO - TRUE
       if (!returnInfo) {
-        this.$emit('addOperation', url, operationName)
+        this.$emit('addOperation', this.renderMode.render, url, operationName)
       }
       this.optionValue = ''
     },
     changeLayerVisibility (layer) {
       (layer.vector_layer.getVisible()) ? layer.vector_layer.setVisible(false) : layer.vector_layer.setVisible(true)
+    },
+    choiceRenderMode (renderMode) {
+      renderMode.render === 'vector' ? this.renderMode = {icon: 'image', render: 'image'} : this.renderMode = {icon: 'grain', render: 'vector'}
     },
     removeLayer (layer, index) {
       this.$emit('removeLayer', layer, index)
@@ -115,7 +123,7 @@ export default {
     },
     urlEntered () {
       this.urlSearch = this.urlSearch.endsWith('/') ? this.urlSearch : `${this.urlSearch}/`
-      this.$emit('urlEntered', this.urlSearch)
+      this.$emit('urlEntered', this.renderMode.render, this.urlSearch)
       this.urlSearch = ''
     },
     zoomToLayer (layerResource) {
@@ -158,5 +166,8 @@ export default {
   }
   .fade-enter, .fade-leave-to {
     opacity: 0;
+  }
+  .choice-btn {
+    min-width: 139px;
   }
 </style>

@@ -10,7 +10,7 @@
 // http://172.30.10.86/ibge/bcim/
 import axios from 'axios'
 import ol from 'openlayers'
-import { loadLayer, onEachFeature } from '../utils/layerUtils.js'
+import { loadImageLayer, loadVectorLayer, onEachFeature } from '../utils/layerUtils.js'
 
 import HvNav from './hv-nav'
 
@@ -24,18 +24,16 @@ export default {
     }
   },
   methods: {
-    addLayer (url, operation_name) {
-      loadLayer(url).then(layer_resource => {
-        let gjson_format = new ol.format.GeoJSON().readFeatures(layer_resource.json, {featureProjection: this.map.getView().getProjection()}) ;
-        let vector_source = new ol.source.Vector({features: gjson_format});
-        let vector_layer = new ol.layer.Vector({ source: vector_source });
-        if (operation_name) {
-          layer_resource.operationName = operation_name
-        }
-        this.map.addLayer(vector_layer);
-        layer_resource.vector_layer = vector_layer
-        this.layers.unshift(layer_resource);
-      })
+    async addLayer (renderMode, url, operation_name) {
+      if (renderMode === 'image') {
+        const imageLayer = await loadImageLayer(url)
+        this.map.addLayer(imageLayer)
+      }
+      if (renderMode === 'vector') {
+        const vectorLayer = await loadVectorLayer(url, this.map.getView().getProjection(), operation_name)
+        this.layers.unshift(vectorLayer)
+        this.map.addLayer(vectorLayer.vector_layer)
+      }
     },
     alreadyIncluded (url) {
       return this.layers.some(layer => layer.url === url)
@@ -62,17 +60,17 @@ export default {
       this.layers.splice(index, 1)
     },
     zoomToLayer (layer_resource) {
-      let extent = layer_resource.vector_layer.getSource().getExtent();
-      this.map.getView().fit(extent, this.map.getSize());
+      let extent = layer_resource.vector_layer.getSource().getExtent()
+      this.map.getView().fit(extent, this.map.getSize())
     }
   },
   mounted () {
-  	this.map = new ol.Map({ target: 'map'});
-    let view = new ol.View({ center: [-4331024.58685793, -1976355.8033415168], zoom: 4 } );
-    let a_source = new ol.source.OSM();
+  	this.map = new ol.Map({ target: 'map'})
+    let view = new ol.View({ center: [-4331024.58685793, -1976355.8033415168], zoom: 4 } )
+    let a_source = new ol.source.OSM()
     let a_layer = new ol.layer.Tile({source: a_source})
-    this.map.setView(view);
-    this.map.addLayer(a_layer);
+    this.map.setView(view)
+    this.map.addLayer(a_layer)
     this.map.on('singleclick', evt => this.popup(evt))
  }
 }
