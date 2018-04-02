@@ -25,14 +25,16 @@ export default {
   },
   methods: {
     async addLayer (renderMode, url, operation_name) {
-      if (renderMode === 'image') {
-        const imageLayer = await loadImageLayer(url)
-        this.map.addLayer(imageLayer)
-      }
-      if (renderMode === 'vector') {
-        const vectorLayer = await loadVectorLayer(url, this.map.getView().getProjection(), operation_name)
-        this.layers.unshift(vectorLayer)
-        this.map.addLayer(vectorLayer.vector_layer)
+      if (!this.alreadyIncluded(url)) {
+        if (renderMode === 'image') {
+          const imageLayer = await loadImageLayer(url)
+          this.map.addLayer(imageLayer)
+        }
+        if (renderMode === 'vector') {
+          const vectorLayer = await loadVectorLayer(url, this.map.getView().getProjection(), operation_name)
+          this.layers.unshift(vectorLayer)
+          this.map.addLayer(vectorLayer.vector_layer)
+        }
       }
     },
     alreadyIncluded (url) {

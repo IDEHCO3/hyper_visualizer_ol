@@ -29,7 +29,7 @@
           </v-menu>
         </v-card-actions>
 
-        <transition name="fade">
+        <transition name="fade" v-if="layer.options_response">
           <v-expansion-panel popout v-show="layer.vector_layer.getVisible()">
             <v-expansion-panel-content class="cyan darken-2">
               <div slot="header">Opções da camada</div>

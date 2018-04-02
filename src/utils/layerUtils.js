@@ -6,6 +6,7 @@ import { LayerResource, OptionsLayer } from './options'
 export async function loadImageLayer (url) {
   const coordinates = await axios.get(`${url}envelope/transform/3857&true`)
   const extent = coordinates.data.coordinates[0][0].concat(coordinates.data.coordinates[0][2])
+  console.log(extent)
   return new ol.layer.Image({
     source: new ol.source.ImageStatic({
       url: `${url}.png`,
@@ -19,7 +20,13 @@ export async function loadImageLayer (url) {
 export async function loadVectorLayer (url, projection, operation_name) {
 	let layer = new LayerResource()
   const resp_get = await axios.get(url)
-	const resp_options = await axios.options(url)
+  try {
+    const resp_options = await axios.options(url)
+    layer.options_response =  new OptionsLayer( resp_options.data['hydra:supportedProperties'], resp_options.data['hydra:supportedOperations'], resp_options.data['@context'], resp_options.data['hydra:iriTemplate'])
+  }
+  catch(err) {
+    console.log('Sem resposta no OPTIONS', err)
+  }
   const gjson_format = new ol.format.GeoJSON().readFeatures(resp_get.data, {featureProjection: projection})
   const vector_source = new ol.source.Vector({features: gjson_format})
 
@@ -27,7 +34,6 @@ export async function loadVectorLayer (url, projection, operation_name) {
   layer.url = url
   layer.options_layer = []
   layer.vector_layer = new ol.layer.Vector({ source: vector_source })
-	layer.options_response =  new OptionsLayer( resp_options.data['hydra:supportedProperties'], resp_options.data['hydra:supportedOperations'], resp_options.data['@context'], resp_options.data['hydra:iriTemplate'])
   if (operation_name) {
     layer.operationName = operation_name
   }
