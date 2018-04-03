@@ -2,10 +2,9 @@
 <div>
   <v-navigation-drawer persistent clipped enable-resize-watcher v-model="drawer" app>
 
-  <v-expansion-panel expand dense >
-    <v-expansion-panel-content v-for="(layer, layerIndex) in layers" :key="layerIndex" class="mb-2">
+  <v-expansion-panel expand dense v-for="(layer, layerIndex) in layers" :key="layerIndex" class="mb-1">
+    <v-expansion-panel-content v-if="layer.vector_layer">
       <div slot="header">{{ layer.operationName || layer.short_name() }}</div>
-
       <v-card>
         <v-card-actions>
           <v-switch :label="layer.vector_layer.getVisible() ? 'ATIVO' : 'INATIVO'" v-model="layer.vector_layer.getVisible()" @change="changeLayerVisibility(layer)" color="cyan"/></v-switch>
@@ -63,6 +62,9 @@
 
       </v-card>
     </v-expansion-panel-content>
+    <v-expansion-panel-content v-else :hide-actions="true" @click.native.stop="urlByEntryPoint(layer.url)">
+      <div slot="header">{{ layer.operationName || layer.short_name() }}</div>
+    </v-expansion-panel-content>
   </v-expansion-panel>
 
   </v-navigation-drawer>
@@ -84,6 +86,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import { loadLayer } from '../utils/layerUtils.js'
 import HvNavPalette from './hv-nav-palette'
 
@@ -121,10 +124,24 @@ export default {
     switchLabel (value) {
       return value ? 'Ativo' : 'Inativo'
     },
-    urlEntered () {
+    urlByEntryPoint (url) {
+      this.urlSearch = url.endsWith('/') ? url : `${url}/`
+      this.urlEntered()
+    },
+    async urlEntered () {
       this.urlSearch = this.urlSearch.endsWith('/') ? this.urlSearch : `${this.urlSearch}/`
-      this.$emit('urlEntered', this.renderMode.render, this.urlSearch)
-      this.urlSearch = ''
+      await this.urlsIsEntryPoint(this.urlSearch)
+        ? this.$emit('entryPoint', this.urlSearch)
+        : this.$emit('urlEntered', this.renderMode.render, this.urlSearch)
+      //this.urlSearch = ''
+    },
+    async urlsIsEntryPoint (url) {
+      const header = await axios.head(url)
+      let entryPoint = null
+      header.headers.link 
+        ? entryPoint = header.headers.link.includes('EntryPoint')
+        : entryPoint = false
+      return entryPoint
     },
     zoomToLayer (layerResource) {
       this.$emit('zoom', layerResource)

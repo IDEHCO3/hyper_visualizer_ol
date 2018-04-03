@@ -1,6 +1,6 @@
 <template>
   <v-app dark id="inspire">
-    <hv-nav @urlEntered="addLayer" @addOperation="addLayer" :layers="layers" @removeLayer="removeLayer" @zoom="zoomToLayer"></hv-nav>
+    <hv-nav @addOperation="addLayer" @entryPoint="entryPoint" @removeLayer="removeLayer" @urlEntered="addLayer" @zoom="zoomToLayer" :layers="layers" ></hv-nav>
     <div id="popup" ref="popup"></div>
     <div id="map"></div>
   </v-app>
@@ -39,6 +39,13 @@ export default {
     },
     alreadyIncluded (url) {
       return this.layers.some(layer => layer.url === url)
+    },
+    async entryPoint (url) {
+      const entryPoint = await axios.get(url)
+     Object.entries(entryPoint.data).map((key) => {
+       const layer = {operationName: key[0], url: key[1]}
+       this.layers.push(layer)
+     })
     },
     popup (evt) {
       const map = this.map
