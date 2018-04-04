@@ -128,12 +128,16 @@ export default {
       this.urlSearch = url.endsWith('/') ? url : `${url}/`
       this.urlEntered()
     },
+    urlChecker (url) {
+      const startsWith = url.startsWith('http://') || url.startsWith('https://') ? url : `http://${url}`
+      return startsWith.endsWith('/') ? startsWith : `${startsWith}/`
+    },
     async urlEntered () {
-      this.urlSearch = this.urlSearch.endsWith('/') ? this.urlSearch : `${this.urlSearch}/`
-      await this.urlsIsEntryPoint(this.urlSearch)
-        ? this.$emit('entryPoint', this.urlSearch)
-        : this.$emit('urlEntered', this.renderMode.render, this.urlSearch)
-      //this.urlSearch = ''
+      const url = this.urlChecker(this.urlSearch)
+      await this.urlsIsEntryPoint(url)
+        ? this.$emit('entryPoint', url)
+        : this.$emit('urlEntered', this.renderMode.render, url)
+      this.urlSearch = ''
     },
     async urlsIsEntryPoint (url) {
       const header = await axios.head(url)
