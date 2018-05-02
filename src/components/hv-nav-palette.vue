@@ -45,7 +45,7 @@ export default {
     handlerClick (color) {
       this.selectedColor = color.hex
       const fill = new ol_style.Fill({ color: color.rgba }) // fundo
-      const stroke = new ol_style.Stroke({ color: '#60AED4', width: 1.75 }) // contorno
+      const stroke = new ol_style.Stroke({ color: color.rgba, width: 1.75 }) // contorno
       const new_style = new ol_style.Style({ fill, stroke })
       this.layer.vector_layer.setStyle(new_style)
     }
