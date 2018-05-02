@@ -68,21 +68,22 @@
   </v-expansion-panel>
 
   </v-navigation-drawer>
-    <v-toolbar class="cyan" fixed clipped-left app>
-      <v-toolbar-title >
-        <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn class="choice-btn" color="cyan lighten-1" @click.native="choiceRenderMode(renderMode)">
-        {{ renderMode.render }}
-        <v-icon>{{ renderMode.icon }}</v-icon>
-      </v-btn>
-      <input type="text" v-model="urlSearch" placeholder="Enter URL here..." @keyup.enter="urlEntered"> </input>
-      <v-btn icon @click.native="urlEntered">
-        <v-icon>search</v-icon>
-      </v-btn>
+  <v-toolbar class="cyan" fixed clipped-left app>
+        <v-toolbar-title >
+          <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+
+        <input type="text" v-model="urlSearch" placeholder="Enter URL here..." @keyup.enter="urlEntered"> </input>
+        <v-btn icon @click.native="urlEntered">
+          <v-icon>search</v-icon>
+        </v-btn>
+        <v-btn class="choice-btn" color="cyan lighten-1" @click.native="choiceRenderMode(renderMode)">
+          {{ renderMode.render }}
+          <v-icon>{{ renderMode.icon }}</v-icon>
+        </v-btn>
     </v-toolbar>
-    </div>
+  </div>
 </template>
 
 <script>
@@ -97,7 +98,7 @@ export default {
   data () {
     return {
       drawer: false,
-      renderMode: {icon: 'image', render: 'image'},
+      renderMode: {icon: 'grain', render: 'vector'},
       urlSearch: '',
       optionValue: ''
     }
@@ -142,7 +143,7 @@ export default {
     async urlsIsEntryPoint (url) {
       const header = await axios.head(url)
       let entryPoint = null
-      header.headers.link 
+      header.headers.link
         ? entryPoint = header.headers.link.includes('EntryPoint')
         : entryPoint = false
       return entryPoint
