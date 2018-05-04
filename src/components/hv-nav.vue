@@ -27,39 +27,7 @@
             </v-card>
           </v-menu>
         </v-card-actions>
-
-        <transition name="fade" v-if="layer.options_response">
-          <v-expansion-panel popout v-show="layer.vector_layer.getVisible()">
-            <v-expansion-panel-content class="cyan darken-2">
-              <div slot="header">Opções da camada</div>
-              <v-list dense>
-                <v-list-tile v-for="(option, index) in layer.options_response.supported_operations" :key="index">
-                  <v-list-tile-title> {{ option['hydra:operation'] }} </v-list-tile-title>
-
-                  <v-menu offset-x :close-on-content-click="false" v-if="option['hydra:expects'].length > 0">
-                    <v-btn icon slot="activator">
-                      <v-icon color="indigo accent-4">layers</v-icon>
-                    </v-btn>
-                    <v-card dark>
-                      <v-card-actions>
-                        <input dark type="text" v-model="optionValue" @keyup.enter="addOperation(layer, option)"></input>
-                        <v-btn icon color="primary" flat @click.native="addOperation(layer, option)">
-                          <v-icon>input</v-icon>
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-menu>
-
-                  <v-btn icon v-else style="left: -3px" @click.stop="addOperation(layer, option)">
-                    <v-icon color="cyan lighten-4">info</v-icon>
-                  </v-btn>
-
-                </v-list-tile>
-              </v-list>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </transition>
-
+        <v-btn color="primary" block @click.native="filterModal(layer)">Filtros da Camada</v-btn>
       </v-card>
     </v-expansion-panel-content>
     <v-expansion-panel-content v-else :hide-actions="true" @click.native.stop="urlByEntryPoint(layer.url)">
@@ -67,9 +35,13 @@
     </v-expansion-panel-content>
   </v-expansion-panel>
 
+  <v-dialog v-model="filtersDialog" max-width="1200">
+      <hv-filters-modal @addFilter="addFilter" @close="filtersDialog = false" ref="filterModal"></hv-filters-modal>
+  </v-dialog>
+
   </v-navigation-drawer>
   <v-toolbar class="cyan" fixed clipped-left app>
-        <v-toolbar-title >
+        <v-toolbar-title>
           <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -89,14 +61,16 @@
 <script>
 import axios from 'axios'
 import { loadLayer } from '../utils/layerUtils.js'
+import hvFiltersModal from './hv-filters-modal'
 import HvNavPalette from './hv-nav-palette'
 
 export default {
   name: 'hv-nav',
   props: [ 'layers' ],
-  components: { HvNavPalette },
+  components: { hvFiltersModal, HvNavPalette },
   data () {
     return {
+      filtersDialog: false,
       drawer: false,
       renderMode: {icon: 'grain', render: 'vector'},
       urlSearch: '',
@@ -104,20 +78,24 @@ export default {
     }
   },
   methods: {
-    addOperation (layer, operation) {
-      const url = this.optionValue.length > 0 ? `${layer.url}${operation['hydra:operation']}/${this.optionValue}/` : `${layer.url}${operation['hydra:operation']}/`
-      const operationName = `${layer.short_name()} / ${operation['hydra:operation']} / ${this.optionValue}`
-      const returnInfo = operation["hydra:returns"].startsWith('http://schema.org/') // CASO A OPERAÇÃO RETORNE UM VALOR PRIMITIVO - TRUE
-      if (!returnInfo) {
-        this.$emit('addOperation', this.renderMode.render, url, operationName)
-      }
-      this.optionValue = ''
+    addFilter (url) {
+      console.log(url)
+      this.$emit('addOperation', this.renderMode.render, url)
     },
     changeLayerVisibility (layer) {
       (layer.vector_layer.getVisible()) ? layer.vector_layer.setVisible(false) : layer.vector_layer.setVisible(true)
     },
     choiceRenderMode (renderMode) {
       renderMode.render === 'vector' ? this.renderMode = {icon: 'image', render: 'image'} : this.renderMode = {icon: 'grain', render: 'vector'}
+    },
+    filterModal (layer) {
+      this.$refs.filterModal.filters = this.layerFilters(layer.options_response.supported_operations)
+      this.$refs.filterModal.url = layer.url
+       this.$refs.filterModal.layerName = layer.operationName || layer.short_name()
+      this.filtersDialog = true
+    },
+    layerFilters (options) {
+      return options.filter(option => option['hydra:expects'].length > 0)
     },
     removeLayer (layer, index) {
       this.$emit('removeLayer', layer, index)
