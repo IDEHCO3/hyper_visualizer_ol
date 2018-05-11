@@ -27,7 +27,7 @@
             </v-card>
           </v-menu>
         </v-card-actions>
-        <v-btn color="primary" block @click.native="filterModal(layer)">Filtros da Camada</v-btn>
+        <v-btn color="primary" block @click.native="filterModal(layer)">Opções da Camada</v-btn>
       </v-card>
     </v-expansion-panel-content>
     <v-expansion-panel-content v-else :hide-actions="true" @click.native.stop="urlByEntryPoint(layer.url)">
@@ -41,19 +41,19 @@
 
   </v-navigation-drawer>
   <v-toolbar class="cyan" fixed clipped-left app>
-        <v-toolbar-title>
-          <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
+    <v-toolbar-title>
+      <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
+    </v-toolbar-title>
+    <v-spacer></v-spacer>
 
-        <input type="text" v-model="urlSearch" placeholder="Enter URL here..." @keyup.enter="urlEntered"> </input>
-        <v-btn icon @click.native="urlEntered">
-          <v-icon>search</v-icon>
-        </v-btn>
-        <v-btn class="choice-btn" color="cyan lighten-1" @click.native="choiceRenderMode(renderMode)">
-          {{ renderMode.render }}
-          <v-icon>{{ renderMode.icon }}</v-icon>
-        </v-btn>
+    <input type="text" v-model="urlSearch" placeholder="Enter URL here..." @keyup.enter="urlEntered"> </input>
+    <v-btn icon @click.native="urlEntered">
+      <v-icon>search</v-icon>
+    </v-btn>
+    <v-btn class="choice-btn" color="cyan lighten-1" @click.native="choiceRenderMode(renderMode)">
+      {{ renderMode.render }}
+      <v-icon>{{ renderMode.icon }}</v-icon>
+    </v-btn>
     </v-toolbar>
   </div>
 </template>
@@ -79,7 +79,6 @@ export default {
   },
   methods: {
     addFilter (url) {
-      console.log(url)
       this.$emit('addOperation', this.renderMode.render, url)
     },
     changeLayerVisibility (layer) {
@@ -89,13 +88,10 @@ export default {
       renderMode.render === 'vector' ? this.renderMode = {icon: 'image', render: 'image'} : this.renderMode = {icon: 'grain', render: 'vector'}
     },
     filterModal (layer) {
-      this.$refs.filterModal.filters = this.layerFilters(layer.options_response.supported_operations)
       this.$refs.filterModal.url = layer.url
-       this.$refs.filterModal.layerName = layer.operationName || layer.short_name()
+      this.$refs.filterModal.layerName = layer.operationName || layer.short_name()
+      this.$refs.filterModal.options = layer.options_response
       this.filtersDialog = true
-    },
-    layerFilters (options) {
-      return options.filter(option => option['hydra:expects'].length > 0)
     },
     removeLayer (layer, index) {
       this.$emit('removeLayer', layer, index)
