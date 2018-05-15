@@ -11,7 +11,7 @@
               <v-list-tile-title class="black--text">{{ attribute }}</v-list-tile-title>
             </v-list-tile-content>
             <v-list-tile-action>
-              <v-btn icon v-if="expressao.includes('{attribute}')" class="blue-grey lighten-1" @click.native.stop="includeAttribute(attribute)">
+              <v-btn icon v-if="expressao.includes('{attribute}')" class="attribute-button" @click.native.stop="includeAttribute(attribute)">
                 <v-icon>send</v-icon>
               </v-btn>
               <v-btn icon v-else class="grey lighten-1" @click.native.stop="showAttribute(attribute)">
@@ -37,18 +37,28 @@
         </v-card-text>
       </v-card>
 
-      <div class="filtros">
-        Filtros
+      <div class="opcoes">
+        Opções
         <v-list>
-          <v-list-tile class="campos-list" v-for="(filter, index) in filters(options.supported_operations)" :key="index">
+          <v-list-tile class="campos-list" v-for="(option, index) in options.supported_operations" :key="index">
+
             <v-list-tile-content>
-              <v-list-tile-title class="black--text">{{ filter['hydra:operation'] }}</v-list-tile-title>
+              <v-list-tile-title class="black--text">{{ option['hydra:operation'] }}</v-list-tile-title>
             </v-list-tile-content>
-            <v-list-tile-action>
-              <v-btn icon ripple class="grey lighten-1" @click.stop="filterSelected(filter)">
+
+            <v-list-tile-action v-if="option['hydra:expects'].length">
+              <v-btn icon ripple class="light-blue lighten-1" @click.stop="filterSelected(option)">
                 <v-icon>send</v-icon>
               </v-btn>
             </v-list-tile-action>
+
+            <v-list-tile-action v-else>
+              <v-btn icon ripple @click.stop="functionSelected(option)" :class="option['hydra:returns'].includes('geojson') ? 'light-blue lighten-1' : ''">
+                <v-icon v-if="option['hydra:returns'].includes('geojson')">layers</v-icon>
+                <v-icon v-else color="light-blue darken-4">info</v-icon>
+              </v-btn>
+            </v-list-tile-action>
+
           </v-list-tile>
         </v-list>
       </div>
@@ -95,6 +105,8 @@
         <v-btn class="grey lighten-3 black--text" @click="includeOperator('notlike')">not like</v-btn>
         <v-btn class="grey lighten-3 black--text" @click="includeOperator('in')">in</v-btn>
         <v-btn class="grey lighten-3 black--text" @click="includeOperator('notin')">not in</v-btn>
+        <v-btn class="grey lighten-3 black--text" @click="includeOperator('and')">and</v-btn>
+        <v-btn class="grey lighten-3 black--text" @click="includeOperator('or')">or</v-btn>
       </div>
 
       <div class="expressao">
@@ -102,7 +114,7 @@
       </div>
 
       <div class="botoes">
-        <v-btn class="cyan darken-1" @click.native="addFilters">Ok</v-btn>
+        <v-btn class="cyan darken-1" @click.native="addFilters(expressionUrl)">Ok</v-btn>
         <v-btn class="blue-grey lighten-1" @click.native="clearUris">Limpar</v-btn>
         <v-btn class="blue-grey lighten-1" @click.native="close">Cancelar</v-btn>
       </div>
@@ -155,13 +167,9 @@ export default {
     clearAttributes () {
       this.attributes = []
     },
-    addFilters () {
-      this.$emit('addFilter', this.expressionUrl)
+    addFilters (url) {
+      this.$emit('addFilter', url)
       this.close()
-    },
-    filters (supported_operations) {
-      const filters = supported_operations.filter(operation => operation['hydra:expects'].length)
-      return filters
     },
     filterExpects (expects) {
       if (expects) {
@@ -174,6 +182,16 @@ export default {
         expects = "attribute}/{operator}/{value"
       }
       this.uris.push({filter: filter['hydra:operation'], value: `{${expects}}`})
+    },
+    async functionSelected (option) {
+      const url = `${this.url}${option['hydra:operation']}`
+      if (!option['hydra:returns'].includes('geojson')) {
+        this.clearAttributes()
+        const optionResponse = await axios.get(url)
+        this.attributes = Object.entries(optionResponse.data).map(item => item.join('\n'))
+      } else {
+        this.addFilters(url)
+      }
     },
     removeFilter (filter) {
       const filterIndex = this.uris.indexOf(filter)
@@ -224,7 +242,7 @@ export default {
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
   'atributos amostras'
-  'filtros valores'
+  'opcoes valores'
   'operadores operadores'
   'expressao expressao'
   'botoes botoes';
@@ -243,10 +261,10 @@ export default {
   grid-area: amostras;
   overflow: auto;
 }
-.filtros {
+.opcoes {
   height: 300px;
   border:1px solid #EEEEEE;
-  grid-area: filtros;
+  grid-area: opcoes;
   overflow: auto;
 }
 .valores {
@@ -275,5 +293,18 @@ export default {
 }
 .campos-list:nth-child(even), .valores-list:nth-child(even) {
   background: #CFD8DC;
+}
+.attribute-button {
+    animation-name: attribute-button;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+@keyframes attribute-button {
+  0%   {background-color: #B3E5FC}
+  25%  {background-color: #4FC3F7}
+  50%  {background-color: #29B6F6}
+  75%  {background-color: #4FC3F7}
+  100% {background-color: #B3E5FC}
 }
 </style>
