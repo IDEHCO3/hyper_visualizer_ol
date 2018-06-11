@@ -1,6 +1,6 @@
 <template>
   <v-app dark id="inspire">
-    <hv-nav @addOperation="addLayer" @entryPoint="entryPoint" @removeLayer="removeLayer" @urlEntered="addLayer" @zoom="zoomToLayer" :layers="layers" ></hv-nav>
+    <hv-nav @addOperation="addLayer" @entryPoint="entryPoint" @removeLayer="removeLayer" @urlEntered="addLayer" @zoom="zoomToLayer" :layers="layers" @switchBaseLayer="switchBaseLayer"></hv-nav>
     <div id="popup" ref="popup"></div>
     <div id="map"></div>
   </v-app>
@@ -11,7 +11,7 @@
 import axios from 'axios'
 import ol from 'openlayers'
 import { loadImageLayer, loadVectorLayer, onEachFeature } from '../utils/layerUtils.js'
-
+import baseLayer from '../utils/baseLayers.js'
 import HvNav from './hv-nav'
 
 export default {
@@ -47,6 +47,10 @@ export default {
        this.layers.push(layer)
      })
     },
+    switchBaseLayer (base, oldBase) {
+      this.map.removeLayer(baseLayer(oldBase))
+      if (base !== 'nenhuma') this.map.addLayer(baseLayer(base))
+    },
     popup (evt) {
       const map = this.map
       const popup = new ol.Overlay({ element: this.$refs.popup })
@@ -75,13 +79,11 @@ export default {
   },
   mounted () {
   	this.map = new ol.Map({ target: 'map'})
-    let view = new ol.View({ center: [-4331024.58685793, -1976355.8033415168], zoom: 4 } )
-    let a_source = new ol.source.OSM()
-    let a_layer = new ol.layer.Tile({source: a_source})
+    const view = new ol.View({ center: [-4331024.58685793, -1976355.8033415168], zoom: 4 })
     this.map.setView(view)
-    this.map.addLayer(a_layer)
+    this.map.addLayer(baseLayer('OSM'))
     this.map.on('singleclick', evt => this.popup(evt))
- }
+  }
 }
 </script>
 

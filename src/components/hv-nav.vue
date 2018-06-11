@@ -4,7 +4,12 @@
 
   <v-expansion-panel expand dense v-for="(layer, layerIndex) in layers" :key="layerIndex" class="mb-1">
     <v-expansion-panel-content v-if="layer.vector_layer">
-      <div slot="header">{{ layer.operationName || layer.short_name() }}</div>
+      <div slot="header">{{ layer.operationName || layer.short_name() }}
+        <v-tooltip right close-delay="2500">
+          <v-btn slot="activator" dark icon><v-icon>info</v-icon></v-btn>
+          <span>{{ layer.url }}</span>
+        </v-tooltip>
+      </div>
       <v-card>
         <v-card-actions>
           <v-switch :label="layer.vector_layer.getVisible() ? 'ATIVO' : 'INATIVO'" v-model="layer.vector_layer.getVisible()" @change="changeLayerVisibility(layer)" color="cyan"/></v-switch>
@@ -32,6 +37,15 @@
     </v-expansion-panel-content>
     <v-expansion-panel-content v-else :hide-actions="true" @click.native.stop="urlByEntryPoint(layer.url)">
       <div slot="header">{{ layer.operationName || layer.short_name() }}</div>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
+
+  <v-expansion-panel class="blue-grey lighten-3">
+    <v-expansion-panel-content class="grey darken-2">
+      <div slot="header">Camada Base</div>
+      <v-radio-group v-model="baseLayersRadio" style="margin-left: 25px;">
+        <v-radio v-for="(base, i) in baseLayers" :key="i" :label="`Camada base ${base.name}`" :value="base.name"></v-radio>
+      </v-radio-group>
     </v-expansion-panel-content>
   </v-expansion-panel>
 
@@ -72,9 +86,19 @@ export default {
     return {
       filtersDialog: false,
       drawer: false,
+      showLayerUrl: false,
       renderMode: {icon: 'grain', render: 'vector'},
       urlSearch: '',
-      optionValue: ''
+      optionValue: '',
+      baseLayersRadio: 'OSM',
+      baseLayers: [
+        {name: 'OSM', active: true},
+        {name: 'google', active: false},
+        {name: 'satelite', active: false},
+        {name: 'watercolor', active: false},
+        {name: 'wikimedia', active: false},
+        {name: 'nenhuma', active: false}
+      ]
     }
   },
   methods: {
@@ -124,6 +148,11 @@ export default {
     },
     zoomToLayer (layerResource) {
       this.$emit('zoom', layerResource)
+    }
+  },
+  watch: {
+    baseLayersRadio (value, oldValue) {
+      this.$emit('switchBaseLayer', value, oldValue)
     }
   }
 }
