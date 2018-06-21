@@ -6,7 +6,6 @@ import { LayerResource, OptionsLayer } from './options'
 export async function loadImageLayer (url) {
   const coordinates = await axios.get(`${url}envelope/transform/3857&true`)
   const extent = coordinates.data.coordinates[0][0].concat(coordinates.data.coordinates[0][2])
-  console.log(extent)
   return new ol.layer.Image({
     source: new ol.source.ImageStatic({
       url: `${url}.png`,

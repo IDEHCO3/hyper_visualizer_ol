@@ -33,6 +33,7 @@
           </v-menu>
         </v-card-actions>
         <v-btn color="primary" block @click.native="filterModal(layer)">Opções da Camada</v-btn>
+        <v-btn color="primary" block @click.native="addNonSpatial(layer)">Junção de dados não espaciais</v-btn>
       </v-card>
     </v-expansion-panel-content>
     <v-expansion-panel-content v-else :hide-actions="true" @click.native.stop="urlByEntryPoint(layer.url)">
@@ -50,7 +51,11 @@
   </v-expansion-panel>
 
   <v-dialog v-model="filtersDialog" max-width="1200">
-      <hv-filters-modal @addFilter="addFilter" @close="filtersDialog = false" ref="filterModal"></hv-filters-modal>
+    <hv-filters-modal @addFilter="addFilter" @close="filtersDialog = false" ref="filterModal"></hv-filters-modal>
+  </v-dialog>
+
+  <v-dialog v-model="addNonSpatialDialog" persistent max-width="1000">
+    <hv-add-non-spatial @addNonSpatial="addNonSpatial" @close="addNonSpatialDialog = false" ref="addNonSpatialModal"></hv-add-non-spatial>
   </v-dialog>
 
   </v-navigation-drawer>
@@ -76,14 +81,16 @@
 import axios from 'axios'
 import { loadLayer } from '../utils/layerUtils.js'
 import hvFiltersModal from './hv-filters-modal'
-import HvNavPalette from './hv-nav-palette'
+import hvNavPalette from './hv-nav-palette'
+import hvAddNonSpatial from './hv-add-non-spatial'
 
 export default {
   name: 'hv-nav',
   props: [ 'layers' ],
-  components: { hvFiltersModal, HvNavPalette },
+  components: { hvAddNonSpatial, hvFiltersModal, hvNavPalette },
   data () {
     return {
+      addNonSpatialDialog: false,
       filtersDialog: false,
       drawer: false,
       showLayerUrl: false,
@@ -104,6 +111,11 @@ export default {
   methods: {
     addFilter (url) {
       this.$emit('addOperation', this.renderMode.render, url)
+    },
+    addNonSpatial (layer) {
+      const layerFeatures = layer.vector_layer.getSource().getFeatures()
+      this.$refs.addNonSpatialModal.layerFeatures = layerFeatures
+      this.addNonSpatialDialog = true
     },
     changeLayerVisibility (layer) {
       (layer.vector_layer.getVisible()) ? layer.vector_layer.setVisible(false) : layer.vector_layer.setVisible(true)

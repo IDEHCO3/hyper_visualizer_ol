@@ -42,10 +42,10 @@ export default {
     },
     async entryPoint (url) {
       const entryPoint = await axios.get(url)
-     Object.entries(entryPoint.data).map((key) => {
-       const layer = {operationName: key[0], url: key[1]}
-       this.layers.push(layer)
-     })
+      Object.entries(entryPoint.data).map((key) => {
+        const layer = {operationName: key[0], url: key[1]}
+        this.layers.push(layer)
+      })
     },
     switchBaseLayer (base, oldBase) {
       this.map.removeLayer(baseLayer(oldBase))
