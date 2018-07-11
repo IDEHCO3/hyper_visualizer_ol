@@ -113,6 +113,7 @@ export default {
       this.$emit('addOperation', this.renderMode.render, url)
     },
     addNonSpatial (layer) {
+      this.$refs.addNonSpatialModal.clearField()
       const layerFeatures = layer.vector_layer.getSource().getFeatures()
       this.$refs.addNonSpatialModal.layerFeatures = layerFeatures
       this.addNonSpatialDialog = true
@@ -196,7 +197,6 @@ export default {
   input[type=text]:focus {
       border-bottom: 1px solid blue;
       color: white;
-
   }
   .fade-enter-active, .fade-leave-active {
     transition: opacity .8s;

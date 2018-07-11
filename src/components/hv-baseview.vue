@@ -108,6 +108,18 @@ export default {
     bottom: 12px;
     left: -50px;
     min-width: 280px;
+    max-height: 350px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  #popup::-webkit-scrollbar {
+    background: #90CAF9;
+    width: 13px;
+    border-radius: 7px;
+  }
+  #popup::-webkit-scrollbar-thumb {
+    background: #1565C0;
+    border-radius: 5px;
   }
   #popup-close {
     position: absolute;

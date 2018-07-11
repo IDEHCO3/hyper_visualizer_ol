@@ -8,12 +8,10 @@
 
     <div class="add-non-spatial__selects">
       <div class="add-non-spatial__selects__container">
-        <v-expansion-panel>
-          <v-expansion-panel-content v-for="(layer, i) in layerFeatures" :key="i">
-            <div slot="header">{{ layer.getProperties().nome || layer.getProperties().geocodigo }}</div>
+            <div>Propriedades da Camada</div>
             <v-card>
-              <v-list>
-                <v-list-tile class="list" v-for="(property, index) in Object.entries(layer.getProperties())" :key="index">
+              <v-list v-if="layerFeatures[0]">
+                <v-list-tile class="list" v-for="(property, index) in Object.entries(layerFeatures[0].getProperties())" :key="index">
 
                   <v-list-tile-content>
                     <v-list-tile-title class="black--text">{{ property[0] }}</v-list-tile-title>
@@ -27,8 +25,6 @@
                 </v-list-tile>
               </v-list>
             </v-card>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
       </div>
 
       <div class="add-non-spatial__selects__container">
@@ -40,18 +36,19 @@
                 <v-list-tile-title class="black--text">{{ property['hydra:property'] }}</v-list-tile-title>
               </v-list-tile-content>
 
-                <v-list-tile-action style="position: absolute; top: -0.5rem; right: 1rem;">
+                <v-list-tile-action>
                   <v-radio-group v-model="nonSpatialMerge">
                     <v-radio :value="property['hydra:property']" color="primary"></v-radio>
                   </v-radio-group>
                 </v-list-tile-action>
+
+                <v-list-tile-action>
+                  <v-checkbox class="add-non-spatial__checkbox__item" v-model="propertiesToAdd" :label="property['hydra:property']" :value="property['hydra:property']"></v-checkbox>
+                </v-list-tile-action>
+
             </v-list-tile>
           </template>
         </v-list>
-      </div>
-      <div class="add-non-spatial__checkbox">
-        <v-checkbox class="add-non-spatial__checkbox__item" v-for="(property, toAddIndex) in nonSpatialProperties" :key="toAddIndex"
-          v-model="propertiesToAdd" :label="property['hydra:property']" :value="property['hydra:property']"></v-checkbox>
       </div>
       
     </div>
@@ -77,7 +74,7 @@ export default {
   },
   methods: {
     async addPropertiesInLayer () {
-      this.layerFeatures.map(async layer => {
+      await this.layerFeatures.map(async layer => {
         const url = `${this.nonSpatialUrl}filter/${this.nonSpatialMerge}/eq/${layer.getProperties()[this.layerMerge]}`
         try {
           const response = await axios.get(url)
@@ -88,12 +85,12 @@ export default {
               }
             })
           })
-          this.close()
         } catch (error) {
           this.clearField()
           console.log(error)
         }
       })
+      //this.close()
     },
     async getNonSpatialProperties () {
       this.nonSpatialUrl = this.nonSpatialUrl.endsWith('/') ? this.nonSpatialUrl : `${this.nonSpatialUrl}/`
@@ -109,7 +106,6 @@ export default {
       this.propertiesToAdd = []
     },
     close () {
-      this.clearField()
       this.$emit('close')
     }
   }
@@ -155,7 +151,6 @@ export default {
   height: 100%;
   max-height: 500px;
   overflow-x: auto;
-  overflow-x: hidden;
   border: 1px solid #78909C;
 }
 .list:nth-child(odd) {
@@ -171,5 +166,9 @@ export default {
 }
 .add-non-spatial__checkbox__item {
   width: 200px;
+}
+label {
+  background: blue;
+  color: #000;
 }
 </style>
