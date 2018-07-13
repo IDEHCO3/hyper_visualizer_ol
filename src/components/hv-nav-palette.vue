@@ -1,12 +1,28 @@
 <template>
-  <div class="palette">
-    <ul class="color-container">
-      <li class="color-box" v-for="color in palette" :key="color.hex"
-        @click="handlerClick(color)"
-        :style="{background: color.hex}">
-        <div class="color-selected" v-show="color.hex === selectedColor"></div>
-      </li>
-    </ul>
+  <div class="palette-container">
+
+    <div class="palette" v-if="layer.json.features[0].geometry.type != 'LineString'">
+      <span class="palette__title">Fill</span>
+      <div class="color-container">
+        <div class="color-box" v-for="color in palette" :key="color.hex"
+          @click="selectFillColor(color)"
+          :style="{background: color.hex}">
+          <div class="color-selected" v-show="color.hex === selectedFill.hex"></div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="palette">
+      <span class="palette__title">Stroke</span>
+      <div class="color-container">
+        <div class="color-box" v-for="color in palette" :key="color.hex"
+          @click="selectStrokeColor(color)"
+          :style="{background: color.hex}">
+          <div class="color-selected" v-show="color.hex === selectedStroke.hex"></div>
+        </div>
+      </div>
+    </div>
+  
   </div>
 </template>
 
@@ -18,7 +34,8 @@ export default {
   props: ['layer'],
   data () {
     return {
-      selectedColor: null,
+      selectedFill: {rgba: null, hex: null},
+      selectedStroke: {rgba: null, hex: null},
       palette: [
         {hex: '#4D4D4D', rgba: 'rgba(77,77,77, 0.5)'}, {hex: '#999999', rgba: 'rgba(153,153,153, 0.5)'},
         {hex: '#FFFFFF', rgba: 'rgba(255,255,255, 0.5)'}, {hex: '#F44E3B', rgba: 'rgba(244,78,59, 0.5)'},
@@ -42,30 +59,55 @@ export default {
     }
   },
   methods: {
-    handlerClick (color) {
-      this.selectedColor = color.hex
-      const fill = new ol_style.Fill({ color: color.rgba }) // fundo
-      const stroke = new ol_style.Stroke({ color: color.rgba, width: 1.75 }) // contorno
-      const new_style = new ol_style.Style({
+    createStyle (color) {
+      const fill = new ol_style.Fill({ color: this.selectedFill.rgba || color.rgba }) // fundo
+      const stroke = new ol_style.Stroke({ color: this.selectedStroke.rgba || color.rgba, width: 1.75 }) // contorno
+      return new ol_style.Style({
         image: new ol_style.Circle({
           fill: fill,
           stroke: stroke,
           radius: 5
         }), fill, stroke })
-      this.layer.vector_layer.setStyle(new_style)
+    },
+    selectFillColor (color) {
+      this.selectedFill = color
+      const newStyle = this.createStyle(color)
+      this.layer.vector_layer.setStyle(newStyle)
+    },
+    selectStrokeColor (color) {
+      this.selectedStroke = color
+      const newStyle = this.createStyle(color)
+      this.layer.vector_layer.setStyle(newStyle)
     }
   }
 }
 </script>
 
 <style scoped>
+.palette-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
 .palette {
+  position: relative;
+  margin: 0 5px;
+  font-weight: 500;
   padding-top: 5px;
   padding-left: 5px;
   width: 265px;
   border-radius: 5px;
   box-shadow: 0 2px 10px rgba(0,0,0,.12), 0 2px 5px rgba(0,0,0,.16);
   background-color: #fff;
+}
+.palette__title {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 2px;
+  color: white;
+  font-weight: 600;
+  width: 100%;
+  background: #546E7A;
 }
 .color-container {
   overflow: hidden;

@@ -18,9 +18,12 @@
                   </v-list-tile-content>
 
                   <v-list-tile-action style="position: absolute; top: -0.5rem; right: 1rem;">
-                    <v-radio-group v-model="layerMerge">
-                      <v-radio :value="property[0]" color="primary"></v-radio>
-                    </v-radio-group>
+                      <v-radio-group v-model="layerMerge">
+                        <v-tooltip top close-delay="50">
+                          <v-radio slot="activator" light :value="property[0]" color="primary"></v-radio>
+                          <span>Join</span>
+                        </v-tooltip>
+                      </v-radio-group>
                   </v-list-tile-action>
                 </v-list-tile>
               </v-list>
@@ -36,14 +39,20 @@
                 <v-list-tile-title class="black--text">{{ property['hydra:property'] }}</v-list-tile-title>
               </v-list-tile-content>
 
-                <v-list-tile-action>
+                <v-list-tile-action style="position: relative; top: -8px;">
                   <v-radio-group v-model="nonSpatialMerge">
-                    <v-radio :value="property['hydra:property']" color="primary"></v-radio>
+                    <v-tooltip top close-delay="50">
+                      <v-radio slot="activator" light :value="property['hydra:property']" color="primary"></v-radio>
+                      <span>Join</span>
+                    </v-tooltip>
                   </v-radio-group>
                 </v-list-tile-action>
 
-                <v-list-tile-action>
-                  <v-checkbox class="add-non-spatial__checkbox__item" v-model="propertiesToAdd" :label="property['hydra:property']" :value="property['hydra:property']"></v-checkbox>
+                <v-list-tile-action class="select__checkbox">
+                  <v-tooltip top close-delay="50">
+                    <v-checkbox slot="activator" light class="add-non-spatial__checkbox__item" v-model="propertiesToAdd" :value="property['hydra:property']"></v-checkbox>
+                    <span>Selecione para adicionar</span>
+                  </v-tooltip>
                 </v-list-tile-action>
 
             </v-list-tile>
@@ -150,7 +159,7 @@ export default {
   width: 400px;
   height: 100%;
   max-height: 500px;
-  overflow-x: auto;
+  overflow-x: hidden;
   border: 1px solid #78909C;
 }
 .list:nth-child(odd) {
@@ -165,10 +174,14 @@ export default {
   justify-content: space-evenly;
 }
 .add-non-spatial__checkbox__item {
-  width: 200px;
+  width: 100%;
+
 }
 label {
   background: blue;
   color: #000;
+}
+.select__checkbox {
+  width: 50px;
 }
 </style>
